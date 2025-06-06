@@ -1,6 +1,5 @@
 let setup = "def setup():\n";
 let loop = "def loop():\n";
-
 //------
 function checkConnectedToStart(block) {
   let parent = block.getParent();
@@ -23,9 +22,9 @@ python.pythonGenerator.forBlock["event_program_starts"] = function (block) {
   const statements_do =
     python.pythonGenerator.statementToCode(block, "DO") || "";
   let code =
-    setup + "\t\tRob.KULBOT_INIT()\n" + "\t\tRob.KULBOT_SENSOR_INIT()\n";
+    setupBody + "\t\tRob.KULBOT_INIT()\n" + "\t\tRob.KULBOT_SENSOR_INIT()\n";
   code += statements_do + "\n";
-  return codeTong;
+  return code + loop;
 };
 //----------------loop_times--------------
 python.pythonGenerator.forBlock["loop_times"] = function (block) {
