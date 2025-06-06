@@ -30,6 +30,57 @@ javascript.javascriptGenerator.forBlock["event_program_starts"] = function (
   code += "}\n\nvoid loop() {\n}\n";
   return code;
 };
+//----------------loop_times--------------
+javascript.javascriptGenerator.forBlock["loop_times"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const times =
+    javascript.javascriptGenerator.valueToCode(
+      block,
+      "number",
+      javascript.javascriptGenerator.ORDER_NONE
+    ) || "10";
+  const statements_do =
+    javascript.javascriptGenerator.statementToCode(block, "DO") ||
+    javascript.javascriptGenerator.PASS;
+  return `for (int i=0; i<${times}; i++)\n${statements_do}`;
+};
+//----------------loop_until--------------
+javascript.javascriptGenerator.forBlock["loop_until"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const condition =
+    javascript.javascriptGenerator.valueToCode(
+      block,
+      "condition",
+      javascript.javascriptGenerator.ORDER_NONE
+    ) || "False";
+  const statements_do =
+    javascript.javascriptGenerator.statementToCode(block, "DO") ||
+    javascript.javascriptGenerator.PASS;
+  return `while (!${condition})\n${statements_do}`;
+};
+//------------ loop_forever ------------
+javascript.javascriptGenerator.forBlock["loop_forever"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  let parent = block.getParent();
+  let hasParentLoopForever = false;
+  while (parent) {
+    if (parent.type === "loop_forever") {
+      hasParentLoopForever = true;
+      break;
+    }
+    parent = parent.getParent();
+  }
+  const statements_do =
+    javascript.javascriptGenerator.statementToCode(block, "DO") ||
+    javascript.javascriptGenerator.PASS;
+  if (hasParentLoopForever) {
+    // Nếu là loop_forever lồng nhau, chỉ sinh while (1)
+    return `while (1)\n${statements_do}`;
+  } else {
+    // Nếu là loop_forever đầu tiên, sinh loop + statements_do
+    return loop + statements_do;
+  }
+};
 //------------ if ------------
 javascript.javascriptGenerator.forBlock["if"] = function (block) {
   const condition =

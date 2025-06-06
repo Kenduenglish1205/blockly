@@ -1,4 +1,6 @@
 let setup = "def setup():\n";
+let loop = "def loop():\n";
+
 //------
 function checkConnectedToStart(block) {
   let parent = block.getParent();
@@ -14,23 +16,67 @@ function checkConnectedToStart(block) {
   );
   return false;
 }
-//----------------INIT----
-// python.pythonGenerator.forBlock["initialize"] = function (block) {
-//   if (!checkConnectedToStart(block)) return "";
-//   return ``;
-// };
+
 //----------------event_program_starts----
 //--- codetong = python.pythonGenerator.forBlock["event_program_starts"](block)
 python.pythonGenerator.forBlock["event_program_starts"] = function (block) {
   const statements_do =
     python.pythonGenerator.statementToCode(block, "DO") || "";
-  let code = setup;
-  code +=
-    "\t\tRob.KULBOT_INIT()\n" +
-    "\t\tRob.KULBOT_SENSOR_INIT()\n" +
-    statements_do +
-    "\n";
-  return code;
+  let code =
+    setup + "\t\tRob.KULBOT_INIT()\n" + "\t\tRob.KULBOT_SENSOR_INIT()\n";
+  code += statements_do + "\n";
+  return codeTong;
+};
+//----------------loop_times--------------
+python.pythonGenerator.forBlock["loop_times"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const times =
+    python.pythonGenerator.valueToCode(
+      block,
+      "number",
+      python.pythonGenerator.ORDER_NONE
+    ) || "10";
+  const statements_do =
+    python.pythonGenerator.statementToCode(block, "DO") ||
+    python.pythonGenerator.PASS;
+  return `for (int i=0; i<${times}; i++)\n${statements_do}`;
+};
+//----------------loop_until--------------
+python.pythonGenerator.forBlock["loop_until"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const condition =
+    python.pythonGenerator.valueToCode(
+      block,
+      "condition",
+      python.pythonGenerator.ORDER_NONE
+    ) || "False";
+  const statements_do =
+    python.pythonGenerator.statementToCode(block, "DO") ||
+    python.pythonGenerator.PASS;
+  return `while (!${condition})\n${statements_do}`;
+};
+//------------ loop_forever ------------
+python.pythonGenerator.forBlock["loop_forever"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  let parent = block.getParent();
+  let hasParentLoopForever = false;
+  while (parent) {
+    if (parent.type === "loop_forever") {
+      hasParentLoopForever = true;
+      break;
+    }
+    parent = parent.getParent();
+  }
+  const statements_do =
+    python.pythonGenerator.statementToCode(block, "DO") ||
+    python.pythonGenerator.PASS;
+  if (hasParentLoopForever) {
+    // Nếu là loop_forever lồng nhau, chỉ sinh while (1)
+    return `while (1)\n${statements_do}`;
+  } else {
+    // Nếu là loop_forever đầu tiên, sinh loop + statements_do
+    return loop + statements_do;
+  }
 };
 //------------ if ------------
 python.pythonGenerator.forBlock["if"] = function (block) {

@@ -1069,7 +1069,7 @@ const Map<String, dynamic> initialToolboxJson = {
             'number': {
               'shadow': {
                 'type': 'math_number',
-                'fields': {'NUM': 0},
+                'fields': {'NUM': 10},
               },
             },
           },
