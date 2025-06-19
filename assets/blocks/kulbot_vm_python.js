@@ -16,28 +16,31 @@ function checkConnectedToStart(block) {
   return false;
 }
 
-//----------------event_program_starts----
-//--- codetong = python.pythonGenerator.forBlock["event_program_starts"](block)
+// ----------------event_program_starts----
+// --- codetong = python.pythonGenerator.forBlock["event_program_starts"](block)
 python.pythonGenerator.forBlock["event_program_starts"] = function (block) {
   const statements_do =
     python.pythonGenerator.statementToCode(block, "DO") || "";
   let foreverCode = "";
   let otherCode = "";
   let lines = statements_do.split("\n");
+  let whileLevel = 0;
   let inForever = false;
 
   lines.forEach((line) => {
     if (line.trim().startsWith("while (1):")) {
+      whileLevel++;
+      foreverCode += "\t".repeat(whileLevel) + line.trimStart() + "\n";
       inForever = true;
-      foreverCode += line.trimStart() + "\n";
     } else if (
       inForever &&
       (line.startsWith("    ") || line.startsWith("\t"))
     ) {
-      foreverCode += "\t" + line.replace(/^((\s{4}|\t){1,2})/, "") + "\n";
+      foreverCode += "\t".repeat(whileLevel + 1) + line.trim() + "\n";
     } else {
-      if (line.trim() !== "") otherCode += "\t" + line.trim() + "\n"; // dùng tab
+      if (line.trim() !== "") otherCode += "\t" + line.trim() + "\n";
       inForever = false;
+      whileLevel = 0;
     }
   });
 
@@ -51,6 +54,36 @@ python.pythonGenerator.forBlock["event_program_starts"] = function (block) {
   return code;
 };
 
+// python.pythonGenerator.forBlock["event_program_starts"] = function (block) {
+//   const statements_do =
+//     python.pythonGenerator.statementToCode(block, "DO") || "";
+//   let code = setup + "\tRob.KULBOT_INIT()\n" + "\tRob.KULBOT_SENSOR_INIT()\n";
+//   code += statements_do;
+//   return code;
+// };
+//----------------delay-------------------
+python.pythonGenerator.forBlock["delay"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const number =
+    python.pythonGenerator.valueToCode(
+      block,
+      "number",
+      python.pythonGenerator.ORDER_NONE
+    ) || "1";
+  return `delay(${number} * 1000)\n`;
+};
+
+//----------------delay_until-------------------
+python.pythonGenerator.forBlock["delay_until"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const condition =
+    python.pythonGenerator.valueToCode(
+      block,
+      "condition",
+      python.pythonGenerator.ORDER_NONE
+    ) || "False";
+  return `while (!${condition})\n`;
+};
 //----------------loop_times--------------
 python.pythonGenerator.forBlock["loop_times"] = function (block) {
   if (!checkConnectedToStart(block)) return "";
@@ -135,7 +168,7 @@ python.pythonGenerator.forBlock["operators"] = function (block) {
       block,
       "number2",
       python.pythonGenerator.ORDER_ATOMIC
-    ) || "0";
+    ) || "50";
   return [`${n1} ${op} ${n2}`, python.pythonGenerator.ORDER_NONE];
 };
 
@@ -183,7 +216,7 @@ python.pythonGenerator.forBlock["compare"] = function (block) {
       "number2",
       python.pythonGenerator.ORDER_ATOMIC
     ) || "0";
-  return [`(${n1} ${op} ${n2})`, python.pythonGenerator.ORDER_NONE];
+  return [`${n1} ${op} ${n2}`, python.pythonGenerator.ORDER_NONE];
 };
 
 python.pythonGenerator.forBlock["compare_and"] = function (block) {
@@ -241,7 +274,7 @@ python.pythonGenerator.forBlock["random"] = function (block) {
       "TO",
       python.pythonGenerator.ORDER_ATOMIC
     ) || "100";
-  return [`random.randint(${from}, ${to})`, python.pythonGenerator.ORDER_NONE];
+  return [`random(${from}, ${to})`, python.pythonGenerator.ORDER_NONE];
 };
 //-----------------led-------------------
 
@@ -400,4 +433,34 @@ python.pythonGenerator.forBlock["init_sensor"] = function (block) {
   const SENSOR = block.getFieldValue("SENSOR");
   const port = block.getFieldValue("port");
   return `Rob.KULBOT_${SENSOR}_INIT(${port})\n`;
+};
+//------------------lcd-------------------
+python.pythonGenerator.forBlock["lcd_init"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_LCD_INIT(${port})\n`;
+};
+// lcd_number
+python.pythonGenerator.forBlock["lcd_number"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const port = block.getFieldValue("port");
+  const column =
+    python.pythonGenerator.valueToCode(
+      block,
+      "column",
+      python.pythonGenerator.ORDER_ATOMIC
+    ) || "0";
+  const cell =
+    python.pythonGenerator.valueToCode(
+      block,
+      "cell",
+      python.pythonGenerator.ORDER_ATOMIC
+    ) || "0";
+  const number =
+    python.pythonGenerator.valueToCode(
+      block,
+      "number",
+      python.pythonGenerator.ORDER_ATOMIC
+    ) || "0";
+  return `Rob.KULBOT_LCD_PRINT_NUMBER(${port}, ${column}, ${cell}, ${number})\n`;
 };

@@ -799,6 +799,21 @@ Blockly.defineBlocksWithJsonArray([
 
   //--------Display---------
   {
+    type: "lcd_init",
+    previousStatement: null,
+    nextStatement: true,
+    colour: "#B99095",
+    inputsInline: true,
+    message0: "LCD Init: Port %1",
+    args0: [
+      {
+        type: "field_dropdown",
+        name: "port",
+        options: port_1_8,
+      },
+    ],
+  },
+  {
     type: "lcd_number",
     previousStatement: false,
     nextStatement: true,

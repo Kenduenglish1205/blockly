@@ -23,9 +23,6 @@ void main() async {
   );
 }
 
-// Khởi tạo Bluetooth
-// final FlutterBluetoothSerial bluetooth = FlutterBluetoothSerial.instance;
-
 class WebViewApp extends StatefulWidget {
   const WebViewApp({Key? key}) : super(key: key);
 
@@ -384,7 +381,7 @@ class _WebViewAppState extends State<WebViewApp> {
   }
 
   final BlocklyOptions workspaceConfiguration = BlocklyOptions.fromJson(const {
-    'grid': {'spacing': 0, 'length': 0, 'colour': '#ccc', 'snap': true},
+    'grid': {'spacing': 0, 'length': 0, 'colour': '#fafafa', 'snap': true},
     'toolbox': initialToolboxJson,
     // null safety example
     'collapse': null,

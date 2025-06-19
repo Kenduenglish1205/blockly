@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 const String initialXml =
-    '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="event_program_starts" x="70" y="30" ><field name="TEXT">XML</field></block></xml>';
+    '<xml xmlns="http://www.w3.org/1999/xhtml"><block type="event_program_starts" x="70" y="30" >XML</></block></xml>';
 
 const Map<String, dynamic> initialJson = {
   'blocks': {
@@ -1216,6 +1216,7 @@ const Map<String, dynamic> initialToolboxJson = {
       'name': 'Display',
       'colour': 'B99095',
       'contents': [
+        {'kind': 'block', 'type': 'lcd_init'},
         {
           'kind': 'block',
           'type': 'lcd_number',

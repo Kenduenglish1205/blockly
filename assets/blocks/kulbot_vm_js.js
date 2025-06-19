@@ -27,8 +27,30 @@ javascript.javascriptGenerator.forBlock["event_program_starts"] = function (
     javascript.javascriptGenerator.statementToCode(block, "DO") || "";
   let code = "void setup() {\n";
   code += statements_do;
-  code += "}\n\nvoid loop() {\n}\n";
   return code;
+};
+//----------------delay-------------------
+javascript.javascriptGenerator.forBlock["delay"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const number =
+    javascript.javascriptGenerator.valueToCode(
+      block,
+      "number",
+      javascript.javascriptGenerator.ORDER_NONE
+    ) || "1";
+  return `delay(${number} * 1000)\n`;
+};
+
+//----------------delay_until-------------------
+javascript.javascriptGenerator.forBlock["delay_until"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const condition =
+    javascript.javascriptGenerator.valueToCode(
+      block,
+      "condition",
+      javascript.javascriptGenerator.ORDER_NONE
+    ) || "False";
+  return `while (!${condition}):\n`;
 };
 //----------------loop_times--------------
 javascript.javascriptGenerator.forBlock["loop_times"] = function (block) {
@@ -393,4 +415,22 @@ javascript.javascriptGenerator.forBlock["init_sensor"] = function (block) {
   const SENSOR = block.getFieldValue("SENSOR");
   const port = block.getFieldValue("port");
   return `Rob.KULBOT_${SENSOR}_INIT(${port})\n`;
+};
+//------------------lcd-------------------
+javascript.javascriptGenerator.forBlock["lcd_init"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_LCD_INIT(${port})\n`;
+};
+// lcd_number
+javascript.javascriptGenerator.forBlock["lcd_number"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const port = block.getFieldValue("port");
+  const number =
+    javascript.javascriptGenerator.valueToCode(
+      block,
+      "number",
+      javascript.javascriptGenerator.ORDER_ATOMIC
+    ) || "0";
+  return `Rob.KULBOT_LCD_PRINT_NUMBER(${port}, ${number})\n`;
 };
