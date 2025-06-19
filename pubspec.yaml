@@ -41,6 +41,7 @@ dependencies:
   webview_flutter: ^4.4.2
   code_text_field: ^1.1.0
   flutter_highlight: ^0.7.0
+  # flutter_bluetooth_serial: ^0.4.0
   ## code_text_field
 dev_dependencies:
   flutter_test:

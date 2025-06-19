@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blockly_plus/flutter_blockly_plus.dart';
+// import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'content.dart';
 
 void main() async {
@@ -22,6 +23,9 @@ void main() async {
   );
 }
 
+// Khởi tạo Bluetooth
+// final FlutterBluetoothSerial bluetooth = FlutterBluetoothSerial.instance;
+
 class WebViewApp extends StatefulWidget {
   const WebViewApp({Key? key}) : super(key: key);
 
@@ -34,8 +38,350 @@ class _WebViewAppState extends State<WebViewApp> {
 
   // bool _loadproject = false;
   String _generatedCode = '';
-  // ignore: unused_field
   String _xmlworkspace = '';
+  // Danh sách project
+  List<String> projects = [];
+  void _showProjectModal(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final size = MediaQuery.of(context).size;
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: size.width * 0.35,
+                    // Không đặt maxHeight, để modal tự co giãn
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Block list",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.add),
+                          label: const Text("New"),
+                          onPressed: () {
+                            setState(() {
+                              projects.add("Project ${projects.length + 1}");
+                            });
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ...projects.map(
+                        (name) => Card(
+                          child: ListTile(
+                            title: Text(name),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  tooltip: "Edit",
+                                  onPressed: () {
+                                    _showEditCopyModal(
+                                      context,
+                                      title: "Rename",
+                                      initialValue: name,
+                                      onOk: (newName) {
+                                        if (newName.isEmpty) return;
+                                        // Kiểm tra tên mới đã tồn tại và khác tên cũ
+                                        if (projects.contains(newName) &&
+                                            newName != name) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "Project name already exists!",
+                                              ),
+                                              duration: Duration(seconds: 2),
+                                            ),
+                                          );
+                                        } else {
+                                          setState(() {
+                                            final idx = projects.indexOf(name);
+                                            if (idx != -1 && newName.isNotEmpty)
+                                              projects[idx] = newName;
+                                          });
+                                        }
+                                      },
+                                      okColor: Colors.blueAccent,
+                                      cancelColor: Colors.grey,
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.copy),
+                                  tooltip: "Copy",
+                                  onPressed: () {
+                                    _showEditCopyModal(
+                                      context,
+                                      title: "Copy as",
+                                      initialValue: "$name Copy",
+                                      onOk: (newName) {
+                                        if (newName.isEmpty) return;
+                                        if (projects.contains(newName)) {
+                                          // Hiện SnackBar báo lỗi
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "Project name already exists!",
+                                              ),
+                                              duration: Duration(seconds: 5),
+                                            ),
+                                          );
+                                        } else {
+                                          setState(() {
+                                            projects.add(newName);
+                                          });
+                                        }
+                                      },
+                                      okColor: Colors.blue,
+                                      cancelColor: Colors.grey,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                            onTap: () {
+                              // click project
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.close),
+                          label: const Text("Close"),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // bluetoothbluetooth
+  // Future<void> _showBluetoothModal(BuildContext context) async {
+  //   List<BluetoothDevice> devices =
+  //       await FlutterBluetoothSerial.instance.getBondedDevices();
+  //   BluetoothConnection? connection;
+  //   BluetoothDevice? connectedDevice;
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return StatefulBuilder(
+  //         builder:
+  //             (context, setState) => Dialog(
+  //               child: Padding(
+  //                 padding: const EdgeInsets.all(16),
+  //                 child: Column(
+  //                   mainAxisSize: MainAxisSize.min,
+  //                   children: [
+  //                     const Text(
+  //                       "Bluetooth",
+  //                       style: TextStyle(
+  //                         fontWeight: FontWeight.bold,
+  //                         fontSize: 20,
+  //                       ),
+  //                     ),
+  //                     const SizedBox(height: 12),
+  //                     ElevatedButton.icon(
+  //                       icon: const Icon(Icons.refresh),
+  //                       label: const Text("Quét lại"),
+  //                       onPressed: () async {
+  //                         var newDevices =
+  //                             await FlutterBluetoothSerial.instance
+  //                                 .getBondedDevices();
+  //                         setState(() {
+  //                           devices = newDevices;
+  //                         });
+  //                       },
+  //                     ),
+  //                     const SizedBox(height: 12),
+  //                     ...devices.map(
+  //                       (device) => ListTile(
+  //                         title: Text(device.name ?? device.address),
+  //                         subtitle: Text(device.address),
+  //                         trailing:
+  //                             connectedDevice?.address == device.address
+  //                                 ? const Icon(
+  //                                   Icons.bluetooth_connected,
+  //                                   color: Colors.blue,
+  //                                 )
+  //                                 : ElevatedButton(
+  //                                   child: const Text("Kết nối"),
+  //                                   onPressed: () async {
+  //                                     try {
+  //                                       connection =
+  //                                           await BluetoothConnection.toAddress(
+  //                                             device.address,
+  //                                           );
+  //                                       setState(() {
+  //                                         connectedDevice = device;
+  //                                       });
+  //                                       // Hiện thông báo kết nối thành công
+  //                                       ScaffoldMessenger.of(
+  //                                         context,
+  //                                       ).showSnackBar(
+  //                                         SnackBar(
+  //                                           content: Text(
+  //                                             'Đã kết nối tới ${device.name ?? device.address}',
+  //                                           ),
+  //                                         ),
+  //                                       );
+  //                                     } catch (e) {
+  //                                       ScaffoldMessenger.of(
+  //                                         context,
+  //                                       ).showSnackBar(
+  //                                         SnackBar(
+  //                                           content: Text(
+  //                                             'Kết nối thất bại: $e',
+  //                                           ),
+  //                                         ),
+  //                                       );
+  //                                     }
+  //                                   },
+  //                                 ),
+  //                       ),
+  //                     ),
+  //                     const SizedBox(height: 12),
+  //                     if (connectedDevice != null)
+  //                       ElevatedButton.icon(
+  //                         icon: const Icon(Icons.send),
+  //                         label: const Text("Gửi code"),
+  //                         onPressed: () {
+  //                           // Gửi dữ liệu qua Bluetooth
+  //                           connection?.output.add(
+  //                             Utf8Encoder().convert("Hello Kulbot\r\n"),
+  //                           );
+  //                         },
+  //                       ),
+  //                     Align(
+  //                       alignment: Alignment.centerRight,
+  //                       child: TextButton.icon(
+  //                         icon: const Icon(Icons.close),
+  //                         label: const Text("Đóng"),
+  //                         onPressed: () => Navigator.of(context).pop(),
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //       );
+  //     },
+  //   );
+  // }
+
+  // edit and copy
+  void _showEditCopyModal(
+    BuildContext context, {
+    required String title,
+    required String initialValue,
+    required void Function(String) onOk,
+    Color? okColor,
+    Color? cancelColor,
+  }) {
+    final controller = TextEditingController(text: initialValue);
+    showDialog(
+      context: context,
+      builder: (context) {
+        final size = MediaQuery.of(context).size;
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: SingleChildScrollView(
+            // Giúp modal cuộn khi bàn phím xuất hiện
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: size.width * 0.28,
+                  // Không đặt maxHeight, để modal tự co giãn
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: controller,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Project name",
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: const StadiumBorder(),
+                            backgroundColor: cancelColor,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text("Cancel"),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            shape: const StadiumBorder(),
+                            backgroundColor: okColor,
+                          ),
+                          onPressed: () {
+                            onOk(controller.text.trim());
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text("OK"),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   final BlocklyOptions workspaceConfiguration = BlocklyOptions.fromJson(const {
     'grid': {'spacing': 0, 'length': 0, 'colour': '#ccc', 'snap': true},
@@ -113,8 +459,9 @@ class _WebViewAppState extends State<WebViewApp> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Programming'),
-        backgroundColor: Colors.lightBlue,
+        toolbarHeight: 45,
+        title: const Icon(Icons.house, size: 30, color: Colors.white),
+        backgroundColor: Color(0xFF6DBCFF),
         actions: [
           Switch(
             value: isSwitched,
@@ -135,30 +482,30 @@ class _WebViewAppState extends State<WebViewApp> {
               );
             }),
           ),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.04),
           IconButton(
             icon: const Icon(Icons.save),
             onPressed: () {
               // save
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // setting
-            },
-          ),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.02),
           IconButton(
             icon: const Icon(Icons.bluetooth),
             onPressed: () {
+              // _showBluetoothModal(context);
               // bluetooth
             },
           ),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.02),
           IconButton(
             icon: const Icon(Icons.list_rounded),
             onPressed: () {
+              _showProjectModal(context);
               // menu
             },
           ),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.02),
         ],
       ),
       body: SafeArea(

@@ -283,10 +283,114 @@ javascript.javascriptGenerator.forBlock["init_sensor"] = function (block) {
   const sensor = block.getFieldValue("SENSOR");
   return `Rob.KULBOT_${sensor}_INIT(${port})\n`;
 };
+// Ultrasonic
+javascript.javascriptGenerator.forBlock["ultrasonic"] = function (block) {
+  const port = block.getFieldValue("Ultrasonic");
+  return `Rob.KULBOT_ULTRASONIC_GET(${port})`;
+};
+
+// Line Sensor
+javascript.javascriptGenerator.forBlock["line_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  const line = block.getFieldValue("line");
+  return `Rob.KULBOT_LINE_SENSOR_GET(${port}, "${line}")`;
+};
+
+// IR Sensor
+javascript.javascriptGenerator.forBlock["ir_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_IR_SENSOR_GET(${port})`;
+};
+
+// Touch Sensor
+javascript.javascriptGenerator.forBlock["touch_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_TOUCH_SENSOR_GET(${port})`;
+};
+
+// Temp/Hum Sensor
+javascript.javascriptGenerator.forBlock["temp_sensor"] = function (block) {
+  const type = block.getFieldValue("type");
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_DHT_SENSOR_GET(${port}, "${type}")`;
+};
+
+// Soil Humidity Sensor
+javascript.javascriptGenerator.forBlock["soil_hum_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_SOIL_HUM_SENSOR_GET(${port})`;
+};
+
+// Gas Sensor
+javascript.javascriptGenerator.forBlock["gas_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_GAS_SENSOR_GET(${port})`;
+};
+
+// Gryro Sensor
+javascript.javascriptGenerator.forBlock["gryro_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  const data = block.getFieldValue("data");
+  return `Rob.KULBOT_GRYRO_SENSOR_GET(${port}, ${data})`;
+};
+
+// Color Sensor
+javascript.javascriptGenerator.forBlock["color_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  const color = block.getFieldValue("color");
+  return `Rob.KULBOT_COLOR_SENSOR_GET(${port}, "${color}")`;
+};
+
+// Lux Sensor
+javascript.javascriptGenerator.forBlock["lux_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_LUX_SENSOR_GET(${port})`;
+};
+
+// Light Sensor
+javascript.javascriptGenerator.forBlock["light_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_LIGHT_SENSOR_GET(${port})`;
+};
 //-----------------module_init-------------------
 javascript.javascriptGenerator.forBlock["init_module"] = function (block) {
   if (!checkConnectedToStart(block)) return "";
   const port = block.getFieldValue("port");
   const module = block.getFieldValue("MODULE");
   return `Rob.KULBOT_${module}_INIT(${port})\n`;
+};
+// Traffic Light
+javascript.javascriptGenerator.forBlock["traffic_light"] = function (block) {
+  const port = block.getFieldValue("port");
+  const color = block.getFieldValue("color");
+  const status = block.getFieldValue("Status");
+  return `Rob.KULBOT_TRAFFIC_LIGHT_SET(${port}, "${color}", "${status}")\n`;
+};
+
+// Joystick
+javascript.javascriptGenerator.forBlock["joystick"] = function (block) {
+  const port = block.getFieldValue("port");
+  const type = block.getFieldValue("type");
+  return `Rob.KULBOT_JOYSTICK_GET(${port}, "${type}")`;
+};
+
+// Volume
+javascript.javascriptGenerator.forBlock["volume"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_VOLUME_GET(${port})`;
+};
+
+// Get Button Led
+javascript.javascriptGenerator.forBlock["get_button"] = function (block) {
+  const port = block.getFieldValue("port");
+  const button = block.getFieldValue("button");
+  return `Rob.KULBOT_BUTTON_LED_GET(${port}, "${button}")`;
+};
+
+// Init Sensor
+javascript.javascriptGenerator.forBlock["init_sensor"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const SENSOR = block.getFieldValue("SENSOR");
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_${SENSOR}_INIT(${port})\n`;
 };

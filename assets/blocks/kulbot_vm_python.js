@@ -1,5 +1,5 @@
 let setup = "def setup():\n";
-let loop = "def loop():\n";
+let loop = "while (1):\n";
 //------
 function checkConnectedToStart(block) {
   let parent = block.getParent();
@@ -21,11 +21,36 @@ function checkConnectedToStart(block) {
 python.pythonGenerator.forBlock["event_program_starts"] = function (block) {
   const statements_do =
     python.pythonGenerator.statementToCode(block, "DO") || "";
+  let foreverCode = "";
+  let otherCode = "";
+  let lines = statements_do.split("\n");
+  let inForever = false;
+
+  lines.forEach((line) => {
+    if (line.trim().startsWith("while (1):")) {
+      inForever = true;
+      foreverCode += line.trimStart() + "\n";
+    } else if (
+      inForever &&
+      (line.startsWith("    ") || line.startsWith("\t"))
+    ) {
+      foreverCode += "\t" + line.replace(/^((\s{4}|\t){1,2})/, "") + "\n";
+    } else {
+      if (line.trim() !== "") otherCode += "\t" + line.trim() + "\n"; // dùng tab
+      inForever = false;
+    }
+  });
+
   let code =
-    setupBody + "\t\tRob.KULBOT_INIT()\n" + "\t\tRob.KULBOT_SENSOR_INIT()\n";
-  code += statements_do + "\n";
-  return code + loop;
+    setup +
+    "\tRob.KULBOT_INIT()\n" +
+    "\tRob.KULBOT_SENSOR_INIT()\n" +
+    otherCode +
+    "\n";
+  code += foreverCode;
+  return code;
 };
+
 //----------------loop_times--------------
 python.pythonGenerator.forBlock["loop_times"] = function (block) {
   if (!checkConnectedToStart(block)) return "";
@@ -57,25 +82,10 @@ python.pythonGenerator.forBlock["loop_until"] = function (block) {
 //------------ loop_forever ------------
 python.pythonGenerator.forBlock["loop_forever"] = function (block) {
   if (!checkConnectedToStart(block)) return "";
-  let parent = block.getParent();
-  let hasParentLoopForever = false;
-  while (parent) {
-    if (parent.type === "loop_forever") {
-      hasParentLoopForever = true;
-      break;
-    }
-    parent = parent.getParent();
-  }
   const statements_do =
     python.pythonGenerator.statementToCode(block, "DO") ||
     python.pythonGenerator.PASS;
-  if (hasParentLoopForever) {
-    // Nếu là loop_forever lồng nhau, chỉ sinh while (1)
-    return `while (1)\n${statements_do}`;
-  } else {
-    // Nếu là loop_forever đầu tiên, sinh loop + statements_do
-    return loop + statements_do;
-  }
+  return `while (1):\n${statements_do}`;
 };
 //------------ if ------------
 python.pythonGenerator.forBlock["if"] = function (block) {
@@ -280,10 +290,114 @@ python.pythonGenerator.forBlock["init_sensor"] = function (block) {
   const SENSOR = block.getFieldValue("SENSOR");
   return `Rob.KULBOT_${SENSOR}_INIT(${port})\n`;
 };
+// Ultrasonic
+python.pythonGenerator.forBlock["ultrasonic"] = function (block) {
+  const port = block.getFieldValue("Ultrasonic");
+  return `Rob.KULBOT_ULTRASONIC_GET(${port})`;
+};
+
+// Line Sensor
+python.pythonGenerator.forBlock["line_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  const line = block.getFieldValue("line");
+  return `Rob.KULBOT_LINE_SENSOR_GET(${port}, ${line})`;
+};
+
+// IR Sensor
+python.pythonGenerator.forBlock["ir_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_IR_SENSOR_GET(${port})`;
+};
+
+// Touch Sensor
+python.pythonGenerator.forBlock["touch_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_TOUCH_SENSOR_GET(${port})`;
+};
+
+// Temp/Hum Sensor
+python.pythonGenerator.forBlock["temp_sensor"] = function (block) {
+  const type = block.getFieldValue("type");
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_DHT_SENSOR_GET(${port}, ${type})`;
+};
+
+// Soil Humidity Sensor
+python.pythonGenerator.forBlock["soil_hum_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_SOIL_HUM_SENSOR_GET(${port})`;
+};
+
+// Gas Sensor
+python.pythonGenerator.forBlock["gas_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_GAS_SENSOR_GET(${port})`;
+};
+
+// Gryro Sensor
+python.pythonGenerator.forBlock["gryro_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  const data = block.getFieldValue("data");
+  return `Rob.KULBOT_GRYRO_SENSOR_GET(${port}, ${data})`;
+};
+
+// Color Sensor
+python.pythonGenerator.forBlock["color_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  const color = block.getFieldValue("color");
+  return `Rob.KULBOT_COLOR_SENSOR_GET(${port}, "${color}")`;
+};
+
+// Lux Sensor
+python.pythonGenerator.forBlock["lux_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_LUX_SENSOR_GET(${port})`;
+};
+
+// Light Sensor
+python.pythonGenerator.forBlock["light_sensor"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_LIGHT_SENSOR_GET(${port})`;
+};
 //---------modules----------
 python.pythonGenerator.forBlock["init_module"] = function (block) {
   if (!checkConnectedToStart(block)) return "";
   const port = block.getFieldValue("port");
   const module = block.getFieldValue("MODULE");
   return `Rob.KULBOT_${module}_INIT(${port})\n`;
+};
+// Traffic Light
+python.pythonGenerator.forBlock["traffic_light"] = function (block) {
+  const port = block.getFieldValue("port");
+  const color = block.getFieldValue("color");
+  const status = block.getFieldValue("Status");
+  return `Rob.KULBOT_TRAFFIC_LIGHT_SET(${port}, ${color}, ${status})\n`;
+};
+
+// Joystick
+python.pythonGenerator.forBlock["joystick"] = function (block) {
+  const port = block.getFieldValue("port");
+  const type = block.getFieldValue("type");
+  return `Rob.KULBOT_JOYSTICK_GET(${port}, ${type})`;
+};
+
+// Volume
+python.pythonGenerator.forBlock["volume"] = function (block) {
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_VOLUME_GET(${port})`;
+};
+
+// Get Button Led
+python.pythonGenerator.forBlock["get_button"] = function (block) {
+  const port = block.getFieldValue("port");
+  const button = block.getFieldValue("button");
+  return `Rob.KULBOT_BUTTON_LED_GET(${port}, ${button})`;
+};
+
+// Init Sensor
+python.pythonGenerator.forBlock["init_sensor"] = function (block) {
+  if (!checkConnectedToStart(block)) return "";
+  const SENSOR = block.getFieldValue("SENSOR");
+  const port = block.getFieldValue("port");
+  return `Rob.KULBOT_${SENSOR}_INIT(${port})\n`;
 };
